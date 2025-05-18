@@ -32,13 +32,6 @@
             display: block;
         }
 
-        #unity-loading-bar {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            width: calc(100% - 20px);
-        }
-
         #unity-warning {
             position: absolute;
             top: 0;
@@ -47,62 +40,124 @@
             text-align: center;
             z-index: 10;
         }
+
+        #unity-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 60px;
+            height: 60px;
+            margin: -30px 0 0 -30px;
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #4caf50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 5;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 🎥 YouTube container overlay */
+        #youtube-container {
+            display: none;
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80vw;
+            height: 45vw;
+            max-width: 800px;
+            max-height: 450px;
+            z-index: 100;
+            box-shadow: 0 0 20px black;
+        }
+
+            #youtube-container iframe {
+                width: 100%;
+                height: 100%;
+                border: none;
+            }
     </style>
 </head>
 <body>
     <div id="unity-container">
         <canvas id="unity-canvas" tabindex="-1"></canvas>
-        <div id="unity-loading-bar">
-            <div id="unity-logo"></div>
-            <div id="unity-progress-bar-empty">
-                <div id="unity-progress-bar-full"></div>
-            </div>
-        </div>
+        <div id="unity-spinner"></div>
         <div id="unity-warning"></div>
+        <div id="youtube-container">
+            <iframe id="youtube-frame"
+                    src=""
+                    allow="autoplay; encrypted-media"
+                    allowfullscreen>
+            </iframe>
+        </div>
     </div>
 
     <script>
-      function unityShowBanner(msg, type) {
-        var banner = document.querySelector("#unity-warning");
-        var div = document.createElement("div");
-        div.innerHTML = msg;
-        if (type === "error") div.style = "background: red; padding: 10px;";
-        else if (type === "warning") {
-          div.style = "background: yellow; padding: 10px;";
-          setTimeout(() => {
-            banner.removeChild(div);
-            banner.style.display = banner.children.length ? "block" : "none";
-          }, 5000);
-        }
-        banner.appendChild(div);
-        banner.style.display = "block";
+    function unityShowBanner(msg, type) {
+      var banner = document.querySelector("#unity-warning");
+      var div = document.createElement("div");
+      div.innerHTML = msg;
+      if (type === "error") div.style = "background: red; padding: 10px;";
+      else if (type === "warning") {
+        div.style = "background: yellow; padding: 10px;";
+        setTimeout(() => {
+          banner.removeChild(div);
+          banner.style.display = banner.children.length ? "block" : "none";
+        }, 5000);
       }
+      banner.appendChild(div);
+      banner.style.display = "block";
+    }
 
-      var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/BrusleyM.loader.js";
-      var config = {
-        dataUrl: buildUrl + "/BrusleyM.data",
-        frameworkUrl: buildUrl + "/BrusleyM.framework.js",
-        codeUrl: buildUrl + "/BrusleyM.wasm",
-        streamingAssetsUrl: "StreamingAssets",
-        companyName: "VishTech",
-        productName: "Brusley Masemola",
-        productVersion: "0.0.31",
-        showBanner: unityShowBanner
-      };
+    var buildUrl = "Build";
+    var loaderUrl = buildUrl + "/BrusleyM.loader.js";
+    var config = {
+      dataUrl: buildUrl + "/BrusleyM.data",
+      frameworkUrl: buildUrl + "/BrusleyM.framework.js",
+      codeUrl: buildUrl + "/BrusleyM.wasm",
+      streamingAssetsUrl: "StreamingAssets",
+      companyName: "VishTech",
+      productName: "Brusley Masemola",
+      productVersion: "0.0.32",
+      showBanner: unityShowBanner
+    };
 
-      var script = document.createElement("script");
-      script.src = loaderUrl;
-      script.onload = () => {
-        createUnityInstance(document.querySelector("#unity-canvas"), config, (progress) => {
-          document.querySelector("#unity-progress-bar-full").style.width = (100 * progress) + "%";
-        }).then((unityInstance) => {
-          document.querySelector("#unity-loading-bar").style.display = "none";
-        }).catch((message) => {
-          alert(message);
-        });
-      };
-      document.body.appendChild(script);
+    var script = document.createElement("script");
+    script.src = loaderUrl;
+    script.onload = () => {
+      createUnityInstance(document.querySelector("#unity-canvas"), config, (progress) => {
+        // Spinner only
+      }).then((unityInstance) => {
+        document.querySelector("#unity-spinner").style.display = "none";
+      }).catch((message) => {
+        alert(message);
+      });
+    };
+    document.body.appendChild(script);
+
+    // 🎯 API: Called from Unity
+    function ShowYouTube(videoId) {
+      const container = document.getElementById("youtube-container");
+      const iframe = document.getElementById("youtube-frame");
+      iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+      container.style.display = "block";
+    }
+
+    function HideYouTube() {
+      const container = document.getElementById("youtube-container");
+      const iframe = document.getElementById("youtube-frame");
+      iframe.src = "";
+      container.style.display = "none";
+    }
     </script>
 </body>
 </html>
